@@ -155,15 +155,16 @@ export const runPipelineFromRepo = async (
       let workerUrl = new URL('./workers/parse-worker.js', import.meta.url);
       // When running under vitest, import.meta.url points to src/ where no .js exists.
       // Fall back to the compiled dist/ worker so the pool can spawn real worker threads.
+      const thisDir = fileURLToPath(new URL('.', import.meta.url));
       if (!fs.existsSync(fileURLToPath(workerUrl))) {
-        const distWorker = path.resolve(fileURLToPath(import.meta.url), '..', '..', '..', '..', 'dist', 'core', 'ingestion', 'workers', 'parse-worker.js');
+        const distWorker = path.resolve(thisDir, '..', '..', '..', 'dist', 'core', 'ingestion', 'workers', 'parse-worker.js');
         if (fs.existsSync(distWorker)) {
           workerUrl = pathToFileURL(distWorker) as URL;
         }
       }
       workerPool = createWorkerPool(workerUrl);
     } catch (err) {
-      // Worker pool creation failed — sequential fallback
+      if (isDev) console.warn('Worker pool creation failed, using sequential fallback:', (err as Error).message);
     }
 
     let filesParsedSoFar = 0;

@@ -10,6 +10,7 @@ import { spawnSync } from 'child_process';
 import fs from 'fs';
 import path from 'path';
 import os from 'os';
+import { runHook, parseHookOutput } from '../utils/hook-test-helpers.js';
 
 // ─── Paths to both hook variants ────────────────────────────────────
 
@@ -20,33 +21,6 @@ const HOOKS = [
   { name: 'CJS', path: CJS_HOOK },
   ...(fs.existsSync(PLUGIN_HOOK) ? [{ name: 'Plugin', path: PLUGIN_HOOK }] : []),
 ];
-
-// ─── Helpers ─────────────────────────────────────────────────────────
-
-function runHook(hookPath: string, input: Record<string, any>, cwd?: string): { stdout: string; stderr: string; status: number | null } {
-  const result = spawnSync(process.execPath, [hookPath], {
-    input: JSON.stringify(input),
-    encoding: 'utf-8',
-    timeout: 10000,
-    cwd,
-    stdio: ['pipe', 'pipe', 'pipe'],
-  });
-  return {
-    stdout: result.stdout || '',
-    stderr: result.stderr || '',
-    status: result.status,
-  };
-}
-
-function parseHookOutput(stdout: string): { hookEventName?: string; additionalContext?: string } | null {
-  if (!stdout.trim()) return null;
-  try {
-    const parsed = JSON.parse(stdout.trim());
-    return parsed.hookSpecificOutput || null;
-  } catch {
-    return null;
-  }
-}
 
 // ─── Temp git repo with .gitnexus ───────────────────────────────────
 
