@@ -51,6 +51,8 @@ jobs:
           cache-dependency-path: gitnexus/package-lock.json
       - run: npm ci
         working-directory: gitnexus
+      - run: npm run build
+        working-directory: gitnexus
       - run: npx vitest run test/unit
         working-directory: gitnexus
       - run: npx vitest run test/integration
